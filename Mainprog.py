@@ -1,7 +1,9 @@
 
 from tkinter import *
 from tkinter import ttk
+from tkinter import messagebox
 from PIL import Image,ImageTk
+import random
 
 def main_window():
     global root
@@ -31,6 +33,26 @@ def main_window():
     root.mainloop()
 
 def registration_form():
+
+    def otp_page():
+        if((e_name.get()=='')or(e_dob.get()=='')or(e_num.get()=='')or(e_email.get()=='')or(sex.get()=='None')or(type.get()=='None')or(initial.get()=='None')):
+            msg_box = messagebox.showwarning('Uh oh..','Fill in all the details!')
+            b_otp.config(state=NORMAL)
+        else:
+            b_otp.config(state=DISABLED)
+            w = Toplevel()
+            w.title("Enter OTP")
+            w.geometry("360x140")
+            l_info = Label(w, text="An OTP has been sent to your Email ID:", font=("Helvetica", 14))
+            l_info.place(x=0, y=10)
+            l_otp = Label(w, text="Enter OTP:", font=("Helvetica", 14))
+            l_otp.place(x=0, y=60)
+            e_otp = Entry(w, width=20, borderwidth=3, font=("Helvetica", 14))
+            e_otp.place(x=110, y=60)
+            b_pass = Button(w, text="Set Password", bg="blue", fg="white", font=("Helvetica", 11))
+            b_pass.place(x=220, y=100)
+            w.mainloop()
+
     root.destroy()
     win = Tk()
     win.title("Registration Form")
@@ -55,28 +77,33 @@ def registration_form():
     l_initial.place(x=50, y=560)
 
     """ENTRIES AND OTHER WIDGETS""" #PLACING ALL THE ENTRY WIDGETS
+    global e_name
     e_name = Entry(win, width=30, font=("Helvetica", 15), borderwidth=3)
     e_name.place(x=310, y=95)
+    global e_dob
     e_dob = Entry(win, width=30, font=("Helvetica", 15), borderwidth=3)
     e_dob.place(x=310, y=165)
     e_dob.insert(0, 'dd/mm/yyyy')
+    global e_num
     e_num = Entry(win, width=30, font=("Helvetica", 15), borderwidth=3)
     e_num.place(x=310, y=325)
+    global e_email
     e_email = Entry(win, width=30, font=("Helvetica", 15), borderwidth=3)
     e_email.place(x=310, y=405)
-
+    global sex
     sex = StringVar()
     sex.set(None)                  #PLACING ALL THE RADIOBUTTONS
     r_sex1 = Radiobutton(win, text="Male", variable=sex, value="Male", font=("Helvetica", 15))
     r_sex1.place(x=310, y=245)
     r_sex2 = Radiobutton(win, text="Female", variable=sex, value="Female", font=("Helvetica", 15))
     r_sex2.place(x=450, y=245)
-
+    global type
     type = StringVar()
     type.set(None)                 #PLACING ALL THE DROPDOWN MENUS
     d_type = OptionMenu(win, type, "Savings Account")
     d_type.configure(width=30, bg="white", relief=SUNKEN, font=("Helvetica", 12))
     d_type.place(x=323, y=485)
+    global initial
     initial = IntVar()
     initial.set(10000)
     d_initial = OptionMenu(win, initial, 10000, 20000, 30000)
@@ -86,11 +113,13 @@ def registration_form():
                                     #PLACING ALL THE BUTTONS
     b_cancel = Button(win, text="Cancel", padx=20, pady=7, bg="red", fg="white")
     b_cancel.place(x=400, y=625)
-    b_otp = Button(win, text="Request OTP", padx=20, pady=7, bg="red", fg="white")
+    global b_otp
+    b_otp = Button(win, text="Request OTP", padx=20, pady=7, bg="red", fg="white",command=otp_page)
     b_otp.place(x=500, y=625)
 
     win.resizable(False, False)
     win.mainloop()
+
 
 main_window()
 
