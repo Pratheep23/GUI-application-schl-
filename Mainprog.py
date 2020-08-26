@@ -36,7 +36,7 @@ def registration_form():
 
     def otp_page():
         if((e_name.get()=='')or(e_dob.get()=='')or(e_num.get()=='')or(e_email.get()=='')or(sex.get()=='None')or(type.get()=='None')or(initial.get()=='None')):
-            msg_box = messagebox.showwarning('Uh oh..','Fill in all the details!')
+            msg_box = messagebox.showwarning('Uh oh...','Fill in all the details!')
             b_otp.config(state=NORMAL)
         else:
             b_otp.config(state=DISABLED)
