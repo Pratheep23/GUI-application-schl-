@@ -3,6 +3,8 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
 from PIL import Image,ImageTk
+import smtplib
+from datetime import date
 import random
 
 def main_window():
@@ -34,12 +36,54 @@ def main_window():
 
 def registration_form():
 
+    def password_page():
+       if(int(e_otp.get())==otp):
+           w.destroy()
+           wpass = Toplevel()
+           wpass.geometry("380x210")
+           wpass.title("Set Password")
+           l_password = Label(wpass, text="Password: ", font=("Helvetica", 15))
+           l_password.place(x=5, y=10)
+           e_password = Entry(wpass, font=("Helvetica", 15), borderwidth=5, width=25, show="*")
+           e_password.place(x=5, y=40)
+           l_cpassword = Label(wpass, text="Confirm Password: ", font=("Helvetica", 15))
+           l_cpassword.place(x=5, y=90)
+           e_cpassword = Entry(wpass, font=("Helvetica", 15), borderwidth=5, width=25, show="*")
+           e_cpassword.place(x=5, y=120)
+           b_create = Button(wpass, text="Create Account", font=("Helvetica", 13), bg="blue", fg="white")
+           b_create.place(x=230, y=170)
+
+           def password_cancel():
+               wpass.destroy()
+               win.destroy()
+               main_window()
+
+           b_cancel = Button(wpass, text="Cancel", font=("Helvetica", 13),command=password_cancel)
+           b_cancel.place(x=150, y=170)
+           wpass.mainloop()
+       else:
+           msg_box = messagebox.showwarning('OTP Error', 'Incorrect OTP!')
+           b_otp.config(state=NORMAL)
+
+
     def otp_page():
         if((e_name.get()=='')or(e_dob.get()=='')or(e_num.get()=='')or(e_email.get()=='')or(sex.get()=='None')or(type.get()=='None')or(initial.get()=='None')):
             msg_box = messagebox.showwarning('Uh oh...','Fill in all the details!')
             b_otp.config(state=NORMAL)
         else:
             b_otp.config(state=DISABLED)
+            global otp
+            otp = random.randrange(100000, 1000000)
+            with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+                smtp.ehlo()
+                smtp.starttls()
+                smtp.ehlo()
+                smtp.login('otplogin123@gmail.com', 'oTpOtPoTp')
+                subject = 'OTP LOGIN'
+                body = 'Use this code {} to sign-up'.format(otp)
+                msg = f'Subject: {subject}\n\n{body}'
+                smtp.sendmail('otplogin123@gmail.com', e_email.get(), msg)
+            global w
             w = Toplevel()
             w.title("Enter OTP")
             w.geometry("360x140")
@@ -47,11 +91,13 @@ def registration_form():
             l_info.place(x=0, y=10)
             l_otp = Label(w, text="Enter OTP:", font=("Helvetica", 14))
             l_otp.place(x=0, y=60)
+            global e_otp
             e_otp = Entry(w, width=20, borderwidth=3, font=("Helvetica", 14))
             e_otp.place(x=110, y=60)
-            b_pass = Button(w, text="Set Password", bg="blue", fg="white", font=("Helvetica", 11))
+            b_pass = Button(w, text="Set Password", bg="blue", fg="white", font=("Helvetica", 11),command=password_page)
             b_pass.place(x=220, y=100)
             w.mainloop()
+
 
     root.destroy()
     win = Tk()
@@ -111,7 +157,11 @@ def registration_form():
     d_initial.place(x=323, y=565)
 
                                     #PLACING ALL THE BUTTONS
-    b_cancel = Button(win, text="Cancel", padx=20, pady=7, bg="red", fg="white")
+    def registration_cancel():
+        win.destroy()
+        main_window()
+
+    b_cancel = Button(win, text="Cancel", padx=20, pady=7, bg="red", fg="white",command=registration_cancel)
     b_cancel.place(x=400, y=625)
     global b_otp
     b_otp = Button(win, text="Request OTP", padx=20, pady=7, bg="red", fg="white",command=otp_page)
