@@ -83,7 +83,7 @@ def services():
         d = today.strftime("%b-%d-%Y")
         l_frmacc = Label(l_3,text="From Account: ",font=("Helvetica",20),bg="light grey")
         l_frmacc.place(x=20,y=30)
-        l_toacc = Label(l_3,text="To Account: ",font=("Helvetica",20),bg="light grey")
+        l_toacc = Label(l_3,text="To Account(ID): ",font=("Helvetica",20),bg="light grey")
         l_toacc.place(x=20,y=130)
         l_amt = Label(l_3,text="Amount: ",font=("Helvetica",20),bg="light grey")
         l_amt.place(x=20,y=230)
@@ -100,10 +100,45 @@ def services():
         l_date2.place(x=250,y=330)
         bs_cancel = Button(l_3,text="Cancel Transfer",font=("Helvetica",18),command=cancel)
         bs_cancel.place(x=640,y=450)
-        bs_proceed = Button(l_3,text="Proceed",font=("Helvetica",18),bg="red",fg="white")
+
+        def transfer():
+            connect = sqlite3.connect("user_data.db")
+            c = connect.cursor()
+            r = c.execute("SELECT * FROM userdat WHERE Email=?", (e_toacc.get(),))
+            rl = r.fetchall()
+            connect.commit()
+            connect.close()
+            if(rl==[]):
+                messagebox.showerror("Transfer Failed","The account you are looking to transfer money is not found!")
+            elif((user_details[0][6]-int(e_amt.get()))<0):
+                messagebox.showerror("Oops","Not Enough Balance!")
+            else:
+                connect = sqlite3.connect("user_data.db")
+                c = connect.cursor()
+                c.execute("UPDATE userdat SET Balance=? WHERE Email=?",(user_details[0][6] - int(e_amt.get()), user_details[0][4]))
+                r = c.execute("SELECT * FROM userdat WHERE Email=?", (e_toacc.get(),))
+                rl = r.fetchall()
+                connect.commit()
+                connect.close()
+                connect = sqlite3.connect("user_data.db")
+                c = connect.cursor()
+                c.execute("UPDATE userdat SET Balance=? WHERE Email=?",(rl[0][6]+int(e_amt.get()),e_toacc.get()))
+                connect.commit()
+                connect.close()
+                messagebox.showinfo("Fund Transfer","Transfer was Successful!!")
+                window.destroy()
+                services()
+
+        bs_proceed = Button(l_3,text="Proceed",font=("Helvetica",18),bg="red",fg="white",command=transfer)
         bs_proceed.place(x=850,y=450)
 
     def account_details():
+        connect = sqlite3.connect("user_data.db")
+        c = connect.cursor()
+        new = c.execute("SELECT * FROM userdat WHERE Email=?", (user_details[0][4],))
+        nl = new.fetchall()
+        connect.commit()
+        connect.close()
         b_21.config(state=DISABLED)
         b_22.config(state=DISABLED)
         b_23.config(state=DISABLED)
@@ -124,13 +159,13 @@ def services():
         ld_balance.place(x=20,y=375)
 
 
-        ld_name2 = Label(l_3,text=user_details[0][0],font=("Helvetica",20),bg="light grey")
-        ld_dob2 = Label(l_3,text=user_details[0][1],font=("Helvetica",20),bg="light grey")
-        ld_sex2 = Label(l_3,text=user_details[0][2],font=("Helvetica",20),bg="light grey")
-        ld_id2 = Label(l_3,text=user_details[0][4],font=("Helvetica",20),bg="light grey")
-        ld_mob2 = Label(l_3,text=user_details[0][3],font=("Helvetica",20),bg="light grey")
-        ld_type2 = Label(l_3,text=user_details[0][5],font=("Helvetica",20),bg="light grey")
-        ld_balance2 = Label(l_3,text=user_details[0][6],font=("Helvetica",20),bg="light grey")
+        ld_name2 = Label(l_3,text=nl[0][0],font=("Helvetica",20),bg="light grey")
+        ld_dob2 = Label(l_3,text=nl[0][1],font=("Helvetica",20),bg="light grey")
+        ld_sex2 = Label(l_3,text=nl[0][2],font=("Helvetica",20),bg="light grey")
+        ld_id2 = Label(l_3,text=nl[0][4],font=("Helvetica",20),bg="light grey")
+        ld_mob2 = Label(l_3,text=nl[0][3],font=("Helvetica",20),bg="light grey")
+        ld_type2 = Label(l_3,text=nl[0][5],font=("Helvetica",20),bg="light grey")
+        ld_balance2 = Label(l_3,text=nl[0][6],font=("Helvetica",20),bg="light grey")
         ld_name2.place(x=310,y=20)
         ld_dob2.place(x=310,y=75)
         ld_sex2.place(x=310,y=130)
@@ -211,9 +246,9 @@ def registration_form():
                    c.execute("INSERT INTO userdat VALUES(?,?,?,?,?,?,?,?)",(name,dob,s,mobile,email,toa,balance,password))
                    connect.commit()
                    connect.close()
-                   msg = messagebox.showinfo("Hurray!","Account Successfully Created!!")
+                   messagebox.showinfo("Hurray!","Account Successfully Created!!")
                else:
-                  msg = messagebox.showerror("Uh Oh..","Password Mismatch!")
+                  messagebox.showerror("Uh Oh..","Password Mismatch!")
 
 
            b_create = Button(wpass, text="Create Account", font=("Helvetica", 13), bg="blue", fg="white",command=create_data)
@@ -229,7 +264,7 @@ def registration_form():
            wpass.mainloop()
        else:
            w.destroy()
-           msg_box = messagebox.showwarning('OTP Error', 'Incorrect OTP!')
+           messagebox.showwarning('OTP Error', 'Incorrect OTP!')
            e_name.config(state=NORMAL)
            e_dob.config(state=NORMAL)
            e_num.config(state=NORMAL)
