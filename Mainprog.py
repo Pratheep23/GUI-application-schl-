@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from PIL import Image,ImageTk
 import smtplib
+import sqlite3
 from datetime import date
 import random
 
@@ -28,11 +29,144 @@ def main_window():
     label.bind('<Configure>', resize_image)
     label.pack(fill=BOTH, expand = YES)
     button1 = Button(label,text="NEW USER",padx=30,pady=20,bg='blue',fg="white",command=registration_form)
-    button2 = Button(label,text="EXISTING USER",padx=20,pady=20,bg="blue",fg="white")
+    button2 = Button(label,text="EXISTING USER",padx=20,pady=20,bg="blue",fg="white",command=login)
     button1.place(x=180,y=260)
     button2.place(x=310,y=260)
     root.resizable(False, False)
     root.mainloop()
+def login():
+
+    def sign_in():
+        connect = sqlite3.connect("user_data.db")
+        c = connect.cursor()
+        a = c.execute("SELECT * FROM userdat WHERE Email=? AND Password=?",(e_logemail.get(),e_logpass.get()))
+        global user_details
+        user_details=a.fetchall()
+        connect.commit()
+        connect.close()
+        if(user_details==[]):
+            messagebox.showerror("Incorrect Credentials","Email ID or Password entered is worng!")
+        else:
+            w_log.destroy()
+            services()
+
+    root.destroy()
+    w_log = Tk()
+    w_log.title("LOGIN")
+    w_log.geometry("435x230")
+    l_logemail = Label(w_log, text="Email ID: ", font=("Helvetica", 13))
+    l_logpass = Label(w_log, text="Password: ", font=("Helvetica", 13))
+    e_logemail = Entry(w_log, font=("Helvetica", 13), borderwidth=4, width=30)
+    e_logpass = Entry(w_log, font=("Helvetica", 13), borderwidth=4, width=30,show="*")
+    l_logemail.place(x=180, y=10)
+    e_logemail.place(x=80, y=33)
+    l_logpass.place(x=180, y=90)
+    e_logpass.place(x=80, y=113)
+    b_log = Button(w_log, text="SIGN-IN", font=("helvetica", 13), bg="blue", fg="white", width=10,command=sign_in)
+    b_log.place(x=170, y=170)
+    w_log.resizable(False,False)
+    w_log.mainloop()
+
+def services():
+
+    def cancel():
+            window.destroy()
+            services()
+
+
+    def fund_transfer():
+        b_21.config(state=DISABLED)
+        b_22.config(state=DISABLED)
+        b_23.config(state=DISABLED)
+        b_24.config(state=DISABLED)
+        today = date.today()
+        d = today.strftime("%b-%d-%Y")
+        l_frmacc = Label(l_3,text="From Account: ",font=("Helvetica",20),bg="light grey")
+        l_frmacc.place(x=20,y=30)
+        l_toacc = Label(l_3,text="To Account: ",font=("Helvetica",20),bg="light grey")
+        l_toacc.place(x=20,y=130)
+        l_amt = Label(l_3,text="Amount: ",font=("Helvetica",20),bg="light grey")
+        l_amt.place(x=20,y=230)
+        l_date = Label(l_3,text="Date: ",font=("Helvetica",20),bg="light grey")
+        l_date.place(x=20,y=330)
+
+        l_frmacc2 = Label(l_3,text=user_details[0][0],font=("Helvetica",20),bg="light grey")
+        l_frmacc2.place(x=250,y=30)
+        e_toacc = Entry(l_3,font=("Helvetica",20),width=25)
+        e_toacc.place(x=250,y=130)
+        e_amt = Entry(l_3,font=("Helvetica",20))
+        e_amt.place(x=250,y=230)
+        l_date2 = Label(l_3,text=d,font=("Helvetica",20),bg="light grey")
+        l_date2.place(x=250,y=330)
+        bs_cancel = Button(l_3,text="Cancel Transfer",font=("Helvetica",18),command=cancel)
+        bs_cancel.place(x=640,y=450)
+        bs_proceed = Button(l_3,text="Proceed",font=("Helvetica",18),bg="red",fg="white")
+        bs_proceed.place(x=850,y=450)
+
+    def account_details():
+        b_21.config(state=DISABLED)
+        b_22.config(state=DISABLED)
+        b_23.config(state=DISABLED)
+        b_24.config(state=DISABLED)
+        ld_name = Label(l_3,text="Name: ",font=("Helvetica",20),bg="light grey")
+        ld_dob = Label(l_3,text="Date of Birth: ",font=("Helvetica",20),bg="light grey")
+        ld_sex = Label(l_3,text="Sex: ",font=("Helvetica",20),bg="light grey")
+        ld_id = Label(l_3,text="Email ID: ",font=("Helvetica",20),bg="light grey")
+        ld_mob = Label(l_3,text="Mobile Number: ",font=("Helvetica",20),bg="light grey")
+        ld_type = Label(l_3,text="Type of Account: ",font=("Helvetica",20),bg="light grey")
+        ld_balance = Label(l_3,text="Account Balance: ",font=("Helvetica",20),bg="light grey")
+        ld_name.place(x=20,y=20)
+        ld_dob.place(x=20,y=75)
+        ld_sex.place(x=20,y=130)
+        ld_id.place(x=20,y=195)
+        ld_mob.place(x=20,y=255)
+        ld_type.place(x=20,y=315)
+        ld_balance.place(x=20,y=375)
+
+
+        ld_name2 = Label(l_3,text=user_details[0][0],font=("Helvetica",20),bg="light grey")
+        ld_dob2 = Label(l_3,text=user_details[0][1],font=("Helvetica",20),bg="light grey")
+        ld_sex2 = Label(l_3,text=user_details[0][2],font=("Helvetica",20),bg="light grey")
+        ld_id2 = Label(l_3,text=user_details[0][4],font=("Helvetica",20),bg="light grey")
+        ld_mob2 = Label(l_3,text=user_details[0][3],font=("Helvetica",20),bg="light grey")
+        ld_type2 = Label(l_3,text=user_details[0][5],font=("Helvetica",20),bg="light grey")
+        ld_balance2 = Label(l_3,text=user_details[0][6],font=("Helvetica",20),bg="light grey")
+        ld_name2.place(x=310,y=20)
+        ld_dob2.place(x=310,y=75)
+        ld_sex2.place(x=310,y=130)
+        ld_id2.place(x=310,y=195)
+        ld_mob2.place(x=310,y=255)
+        ld_type2.place(x=310,y=315)
+        ld_balance2.place(x=310,y=375)
+
+        bd_goback  = Button(l_3,text="Go Back",font=("Helvetica",18),bg="red",fg="white",command=cancel)
+        bd_goback.place(x=850,y=450)
+
+
+    window = Tk()
+    window.title("Services")
+    window.geometry("1014x600")
+    f1 = LabelFrame(window)
+    f1.place(x=0,y=0)
+    l_1 = Label(f1,text='Account: {}'.format(user_details[0][0]),font=('Helvetica',12),width=112,anchor=W)
+    l_1.pack()
+    f2 = LabelFrame(window)
+    f2.place(x=0,y=27)
+    b_21 = Button(f2,text="Fund Transfer",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue',command=fund_transfer)
+    b_22 = Button(f2,text="Recent Activity",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue')
+    b_23 = Button(f2,text="Account Details",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue',command=account_details)
+    b_24 = Button(f2,text="Logout",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue')
+    b_21.grid(row=0,column=0)
+    b_22.grid(row=0,column=1)
+    b_23.grid(row=0,column=2)
+    b_24.grid(row=0,column=3)
+    f3 = LabelFrame(window)
+    f3.place(x=0,y=75)
+    l_3 = Label(f3,bg="light grey",padx=503,pady=251)
+    l_3.pack()
+    window.resizable(False,False)
+    window.mainloop()
+
 
 def registration_form():
 
@@ -50,7 +184,39 @@ def registration_form():
            l_cpassword.place(x=5, y=90)
            e_cpassword = Entry(wpass, font=("Helvetica", 15), borderwidth=5, width=25, show="*")
            e_cpassword.place(x=5, y=120)
-           b_create = Button(wpass, text="Create Account", font=("Helvetica", 13), bg="blue", fg="white")
+
+           def create_data():
+               if(e_password.get()==e_cpassword.get()):
+                   name = e_name.get()
+                   dob = e_dob.get()
+                   s = sex.get()
+                   mobile = int(e_num.get())
+                   email = e_email.get()
+                   toa = type.get()
+                   balance = initial.get()
+                   password = e_password.get()
+                   wpass.destroy()
+                   win.destroy()
+                   connect = sqlite3.connect("user_data.db")
+                   c = connect.cursor()
+                   c.execute('''CREATE TABLE IF NOT EXISTS userdat
+                                (Name text,
+                                DOB text,
+                                Sex text,
+                                Mobile integer,
+                                Email text,
+                                Type text,
+                                Balance integer,
+                                Password text)''')
+                   c.execute("INSERT INTO userdat VALUES(?,?,?,?,?,?,?,?)",(name,dob,s,mobile,email,toa,balance,password))
+                   connect.commit()
+                   connect.close()
+                   msg = messagebox.showinfo("Hurray!","Account Successfully Created!!")
+               else:
+                  msg = messagebox.showerror("Uh Oh..","Password Mismatch!")
+
+
+           b_create = Button(wpass, text="Create Account", font=("Helvetica", 13), bg="blue", fg="white",command=create_data)
            b_create.place(x=230, y=170)
 
            def password_cancel():
@@ -62,15 +228,45 @@ def registration_form():
            b_cancel.place(x=150, y=170)
            wpass.mainloop()
        else:
+           w.destroy()
            msg_box = messagebox.showwarning('OTP Error', 'Incorrect OTP!')
+           e_name.config(state=NORMAL)
+           e_dob.config(state=NORMAL)
+           e_num.config(state=NORMAL)
+           e_email.config(state=NORMAL)
+           r_sex1.config(state=NORMAL)
+           r_sex2.config(state=NORMAL)
+           d_type.config(state=NORMAL)
+           d_initial.config(state=NORMAL)
+           b_otp.config(state=NORMAL)
            b_otp.config(state=NORMAL)
 
 
     def otp_page():
+        connect = sqlite3.connect("user_data.db")
+        c = connect.cursor()
+        a = c.execute("SELECT * FROM userdat")
+        l = a.fetchall()
+        count = 0
+        for i in l:
+            if (i[4] == e_email.get()):
+                count += 1
+        connect.commit()
+        connect.close()
         if((e_name.get()=='')or(e_dob.get()=='')or(e_num.get()=='')or(e_email.get()=='')or(sex.get()=='None')or(type.get()=='None')or(initial.get()=='None')):
-            msg_box = messagebox.showwarning('Uh oh...','Fill in all the details!')
+            messagebox.showwarning('Uh oh...','Fill in all the details!')
             b_otp.config(state=NORMAL)
+        elif(count==1):
+            messagebox.showerror("Email ID","Given Email ID has aldready been used!")
         else:
+            e_name.config(state=DISABLED)
+            e_dob.config(state=DISABLED)
+            e_num.config(state=DISABLED)
+            e_email.config(state=DISABLED)
+            r_sex1.config(state=DISABLED)
+            r_sex2.config(state=DISABLED)
+            d_type.config(state=DISABLED)
+            d_initial.config(state=DISABLED)
             b_otp.config(state=DISABLED)
             global otp
             otp = random.randrange(100000, 1000000)
@@ -170,6 +366,7 @@ def registration_form():
     win.resizable(False, False)
     win.mainloop()
 
-
 main_window()
+
+
 
