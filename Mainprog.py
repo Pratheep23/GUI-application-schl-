@@ -6,6 +6,7 @@ from PIL import Image,ImageTk
 import smtplib
 import sqlite3
 from datetime import date
+import time
 import random
 
 def main_window():
@@ -34,6 +35,7 @@ def main_window():
     button2.place(x=310,y=260)
     root.resizable(False, False)
     root.mainloop()
+
 def login():
 
     def sign_in():
@@ -49,8 +51,10 @@ def login():
         else:
             w_log.destroy()
             services()
-
-    root.destroy()
+    try:
+        root.destroy()
+    except:
+        pass
     w_log = Tk()
     w_log.title("LOGIN")
     w_log.geometry("435x230")
@@ -81,6 +85,8 @@ def services():
         b_24.config(state=DISABLED)
         today = date.today()
         d = today.strftime("%b-%d-%Y")
+        t = time.localtime()
+        current_time = time.strftime("%H:%M:%S", t)
         l_frmacc = Label(l_3,text="From Account: ",font=("Helvetica",20),bg="light grey")
         l_frmacc.place(x=20,y=30)
         l_toacc = Label(l_3,text="To Account(ID): ",font=("Helvetica",20),bg="light grey")
@@ -108,6 +114,7 @@ def services():
             rl = r.fetchall()
             connect.commit()
             connect.close()
+
             if(rl==[]):
                 messagebox.showerror("Transfer Failed","The account you are looking to transfer money is not found!")
             elif((user_details[0][6]-int(e_amt.get()))<0):
@@ -126,6 +133,18 @@ def services():
                 connect.commit()
                 connect.close()
                 messagebox.showinfo("Fund Transfer","Transfer was Successful!!")
+                connect = sqlite3.connect("user_data.db")
+                c = connect.cursor()
+                a= rl[0][8] + "{} has Transferred Rs.{} to your Account     Time={}     Date={},".format(user_details[0][0],e_amt.get(),current_time,d)
+                c.execute("UPDATE userdat SET Recents=? WHERE Email=?", (a, e_toacc.get()))
+                connect.commit()
+                connect.close()
+                connect = sqlite3.connect("user_data.db")
+                c = connect.cursor()
+                b = user_details[0][8] + "You have Transferred Rs.{} to {}     Time={}     Date={},".format(e_amt.get(), rl[0][0],current_time,d)
+                c.execute("UPDATE userdat SET Recents=? WHERE Email=?", (b,user_details[0][4]))
+                connect.commit()
+                connect.close()
                 window.destroy()
                 services()
 
@@ -177,6 +196,15 @@ def services():
         bd_goback  = Button(l_3,text="Go Back",font=("Helvetica",18),bg="red",fg="white",command=cancel)
         bd_goback.place(x=850,y=450)
 
+    def logout():
+        msg = messagebox.askquestion("Logout","Are you sure you want to Logout?")
+        if(msg=="yes"):
+            window.destroy()
+            main_window()
+        else:
+            pass
+
+
 
     window = Tk()
     window.title("Services")
@@ -190,7 +218,7 @@ def services():
     b_21 = Button(f2,text="Fund Transfer",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue',command=fund_transfer)
     b_22 = Button(f2,text="Recent Activity",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue')
     b_23 = Button(f2,text="Account Details",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue',command=account_details)
-    b_24 = Button(f2,text="Logout",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue')
+    b_24 = Button(f2,text="Logout",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue',command=logout)
     b_21.grid(row=0,column=0)
     b_22.grid(row=0,column=1)
     b_23.grid(row=0,column=2)
@@ -242,13 +270,33 @@ def registration_form():
                                 Email text,
                                 Type text,
                                 Balance integer,
-                                Password text)''')
-                   c.execute("INSERT INTO userdat VALUES(?,?,?,?,?,?,?,?)",(name,dob,s,mobile,email,toa,balance,password))
+                                Password text,
+                                Recents text)''')
+                   c.execute("INSERT INTO userdat VALUES(?,?,?,?,?,?,?,?,'')",(name,dob,s,mobile,email,toa,balance,password))
                    connect.commit()
                    connect.close()
+                   wins = Tk()
+                   wins.withdraw()
                    messagebox.showinfo("Hurray!","Account Successfully Created!!")
+                   wins.destroy()
+                   login()
+
+
+
                else:
-                  messagebox.showerror("Uh Oh..","Password Mismatch!")
+                   messagebox.showerror("Uh Oh..","Password Mismatch!")
+                   wpass.destroy()
+                   e_name.config(state=NORMAL)
+                   e_dob.config(state=NORMAL)
+                   e_num.config(state=NORMAL)
+                   e_email.config(state=NORMAL)
+                   r_sex1.config(state=NORMAL)
+                   r_sex2.config(state=NORMAL)
+                   d_type.config(state=NORMAL)
+                   d_initial.config(state=NORMAL)
+                   b_otp.config(state=NORMAL)
+                   b_otp.config(state=NORMAL)
+
 
 
            b_create = Button(wpass, text="Create Account", font=("Helvetica", 13), bg="blue", fg="white",command=create_data)
@@ -402,6 +450,3 @@ def registration_form():
     win.mainloop()
 
 main_window()
-
-
-
