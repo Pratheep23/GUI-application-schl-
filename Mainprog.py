@@ -119,7 +119,7 @@ def services():
             if(rl==[]):
                 messagebox.showerror("Transfer Failed","The account you are looking to transfer money is not found!")
             elif((user_details[0][6]-int(e_amt.get()))<0):
-                messagebox.showerror("Oops","Not Enough Balance!")
+                messagebox.showerror("Oops","Insufficient Balance!")
             else:
                 connect = sqlite3.connect("user_data.db")
                 c = connect.cursor()
@@ -248,7 +248,7 @@ def services():
     f3.place(x=0,y=75)
     l_3 = Label(f3,bg="light grey",padx=503,pady=251)
     l_3.pack()
-    #window.resizable(False,False)
+    window.resizable(False,False)
     window.mainloop()
 
 
