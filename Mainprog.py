@@ -2,6 +2,7 @@
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
+from tkcalendar import DateEntry
 from PIL import Image,ImageTk
 import smtplib
 import sqlite3
@@ -204,6 +205,26 @@ def services():
         else:
             pass
 
+    def recents():
+        b_21.config(state=DISABLED)
+        b_22.config(state=DISABLED)
+        b_23.config(state=DISABLED)
+        b_24.config(state=DISABLED)
+        e_r = Text(l_3,height=200,width=1010)
+        e_r.place(x=0,y=0)
+        b_rcancel = Button(e_r,text ="Go Back",font=("Helvetica",18),bg="red",fg="white",command=cancel)
+        b_rcancel.place(x=850, y=450)
+        connect = sqlite3.connect("user_data.db")
+        c = connect.cursor()
+        a = c.execute("SELECT Recents FROM userdat WHERE Email=?",(user_details[0][4],))
+        l = a.fetchall()[0][0].split(",")
+        connect.commit()
+        connect.close()
+        for i in l:
+            e_r.insert(END,str(i)+'\n')
+
+
+
 
 
     window = Tk()
@@ -216,7 +237,7 @@ def services():
     f2 = LabelFrame(window)
     f2.place(x=0,y=27)
     b_21 = Button(f2,text="Fund Transfer",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue',command=fund_transfer)
-    b_22 = Button(f2,text="Recent Activity",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue')
+    b_22 = Button(f2,text="Recent Activity",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue',command=recents)
     b_23 = Button(f2,text="Account Details",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue',command=account_details)
     b_24 = Button(f2,text="Logout",font=("Helvetica",13),width=27,pady=8,bg="light blue",fg='blue',command=logout)
     b_21.grid(row=0,column=0)
@@ -227,7 +248,7 @@ def services():
     f3.place(x=0,y=75)
     l_3 = Label(f3,bg="light grey",padx=503,pady=251)
     l_3.pack()
-    window.resizable(False,False)
+    #window.resizable(False,False)
     window.mainloop()
 
 
@@ -251,7 +272,7 @@ def registration_form():
            def create_data():
                if(e_password.get()==e_cpassword.get()):
                    name = e_name.get()
-                   dob = e_dob.get()
+                   dob = cal.get()
                    s = sex.get()
                    mobile = int(e_num.get())
                    email = e_email.get()
@@ -287,7 +308,7 @@ def registration_form():
                    messagebox.showerror("Uh Oh..","Password Mismatch!")
                    wpass.destroy()
                    e_name.config(state=NORMAL)
-                   e_dob.config(state=NORMAL)
+                   cal.config(state=NORMAL)
                    e_num.config(state=NORMAL)
                    e_email.config(state=NORMAL)
                    r_sex1.config(state=NORMAL)
@@ -314,7 +335,7 @@ def registration_form():
            w.destroy()
            messagebox.showwarning('OTP Error', 'Incorrect OTP!')
            e_name.config(state=NORMAL)
-           e_dob.config(state=NORMAL)
+           cal.config(state=NORMAL)
            e_num.config(state=NORMAL)
            e_email.config(state=NORMAL)
            r_sex1.config(state=NORMAL)
@@ -336,14 +357,14 @@ def registration_form():
                 count += 1
         connect.commit()
         connect.close()
-        if((e_name.get()=='')or(e_dob.get()=='')or(e_num.get()=='')or(e_email.get()=='')or(sex.get()=='None')or(type.get()=='None')or(initial.get()=='None')):
+        if((e_name.get()=='')or(cal.get()=='')or(e_num.get()=='')or(e_email.get()=='')or(sex.get()=='None')or(type.get()=='None')or(initial.get()=='None')):
             messagebox.showwarning('Uh oh...','Fill in all the details!')
             b_otp.config(state=NORMAL)
         elif(count==1):
             messagebox.showerror("Email ID","Given Email ID has aldready been used!")
         else:
             e_name.config(state=DISABLED)
-            e_dob.config(state=DISABLED)
+            cal.config(state=DISABLED)
             e_num.config(state=DISABLED)
             e_email.config(state=DISABLED)
             r_sex1.config(state=DISABLED)
@@ -405,10 +426,9 @@ def registration_form():
     global e_name
     e_name = Entry(win, width=30, font=("Helvetica", 15), borderwidth=3)
     e_name.place(x=310, y=95)
-    global e_dob
-    e_dob = Entry(win, width=30, font=("Helvetica", 15), borderwidth=3)
-    e_dob.place(x=310, y=165)
-    e_dob.insert(0, 'dd/mm/yyyy')
+    global cal
+    cal = DateEntry(win, width=28, year=2000, month=1, day=1,font=("Helvetica", 15),background='darkblue', foreground='white')
+    cal.place(x=310,y=165)
     global e_num
     e_num = Entry(win, width=30, font=("Helvetica", 15), borderwidth=3)
     e_num.place(x=310, y=325)
@@ -450,3 +470,4 @@ def registration_form():
     win.mainloop()
 
 main_window()
+
