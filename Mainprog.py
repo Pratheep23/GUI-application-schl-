@@ -1,9 +1,7 @@
 
 from tkinter import *
-from tkinter import ttk
 from tkinter import messagebox
 from tkcalendar import DateEntry
-from PIL import Image,ImageTk
 import smtplib
 import sqlite3
 from datetime import date
@@ -15,21 +13,8 @@ def main_window():
     root = Tk()
     root.title("Welcome")
     root.geometry('600x600')
-
-    def resize_image(event):
-        new_width = event.width
-        new_height = event.height
-        image = copy_of_image.resize((new_width, new_height))
-        photo = ImageTk.PhotoImage(image)
-        label.config(image = photo)
-        label.image = photo
-
-    image = Image.open(r'Images/images3.jpg')
-    copy_of_image = image.copy()
-    photo = ImageTk.PhotoImage(image)
-    label = ttk.Label(root, image = photo)
-    label.bind('<Configure>', resize_image)
-    label.pack(fill=BOTH, expand = YES)
+    label = Label(root,bg="black",padx=600,pady=600)
+    label.pack()
     button1 = Button(label,text="NEW USER",padx=30,pady=20,bg='blue',fg="white",command=registration_form)
     button2 = Button(label,text="EXISTING USER",padx=20,pady=20,bg="blue",fg="white",command=login)
     button1.place(x=180,y=260)
@@ -86,11 +71,12 @@ def services():
         b_24.config(state=DISABLED)
         today = date.today()
         d = today.strftime("%b-%d-%Y")
+        d1 = today.strftime("%d/%m/%Y")
         t = time.localtime()
         current_time = time.strftime("%H:%M:%S", t)
         l_frmacc = Label(l_3,text="From Account: ",font=("Helvetica",20),bg="light grey")
         l_frmacc.place(x=20,y=30)
-        l_toacc = Label(l_3,text="To Account(ID): ",font=("Helvetica",20),bg="light grey")
+        l_toacc = Label(l_3,text="To Account No: ",font=("Helvetica",20),bg="light grey")
         l_toacc.place(x=20,y=130)
         l_amt = Label(l_3,text="Amount: ",font=("Helvetica",20),bg="light grey")
         l_amt.place(x=20,y=230)
@@ -109,45 +95,89 @@ def services():
         bs_cancel.place(x=640,y=450)
 
         def transfer():
-            connect = sqlite3.connect("user_data.db")
-            c = connect.cursor()
-            r = c.execute("SELECT * FROM userdat WHERE Email=?", (e_toacc.get(),))
-            rl = r.fetchall()
-            connect.commit()
-            connect.close()
-
-            if(rl==[]):
-                messagebox.showerror("Transfer Failed","The account you are looking to transfer money is not found!")
-            elif((user_details[0][6]-int(e_amt.get()))<0):
-                messagebox.showerror("Oops","Insufficient Balance!")
+            numy = str(e_toacc.get())
+            y = 0
+            for i in numy:
+                if (i.isalpha()):
+                    y += 1
+            if(y!=0):
+                messagebox.showerror("Uh..Oh!","Enter a Valid Account Number!")
+            elif(e_toacc.get()==''):
+                messagebox.showerror("Uh..Oh!", "Enter a Valid Account Number!")
+            elif(e_amt.get()==''):
+                messagebox.showerror("Uh..Oh!", "Enter a Valid Amount!")
             else:
                 connect = sqlite3.connect("user_data.db")
                 c = connect.cursor()
-                c.execute("UPDATE userdat SET Balance=? WHERE Email=?",(user_details[0][6] - int(e_amt.get()), user_details[0][4]))
-                r = c.execute("SELECT * FROM userdat WHERE Email=?", (e_toacc.get(),))
+                r = c.execute("SELECT * FROM userdat WHERE AccountNumber=?", (int(e_toacc.get()),))
                 rl = r.fetchall()
                 connect.commit()
                 connect.close()
-                connect = sqlite3.connect("user_data.db")
-                c = connect.cursor()
-                c.execute("UPDATE userdat SET Balance=? WHERE Email=?",(rl[0][6]+int(e_amt.get()),e_toacc.get()))
-                connect.commit()
-                connect.close()
-                messagebox.showinfo("Fund Transfer","Transfer was Successful!!")
-                connect = sqlite3.connect("user_data.db")
-                c = connect.cursor()
-                a= rl[0][8] + "{} has Transferred Rs.{} to your Account     Time={}     Date={},".format(user_details[0][0],e_amt.get(),current_time,d)
-                c.execute("UPDATE userdat SET Recents=? WHERE Email=?", (a, e_toacc.get()))
-                connect.commit()
-                connect.close()
-                connect = sqlite3.connect("user_data.db")
-                c = connect.cursor()
-                b = user_details[0][8] + "You have Transferred Rs.{} to {}     Time={}     Date={},".format(e_amt.get(), rl[0][0],current_time,d)
-                c.execute("UPDATE userdat SET Recents=? WHERE Email=?", (b,user_details[0][4]))
-                connect.commit()
-                connect.close()
-                window.destroy()
-                services()
+
+                if(rl==[]):
+                    messagebox.showerror("Transfer Failed","The account you are looking to transfer money is not found!")
+                elif((user_details[0][6]-int(e_amt.get()))<0):
+                    messagebox.showerror("Oops","Insufficient Balance!")
+                else:
+                    connect = sqlite3.connect("user_data.db")
+                    c = connect.cursor()
+                    c.execute("UPDATE userdat SET Balance=? WHERE Email=?",(user_details[0][6] - int(e_amt.get()), user_details[0][4]))
+                    frm = user_details[0][4]
+                    r = c.execute("SELECT * FROM userdat WHERE AccountNumber=?", (int(e_toacc.get()),))
+                    rl = r.fetchall()
+                    connect.commit()
+                    connect.close()
+                    to = rl[0][4]
+                    connect = sqlite3.connect("user_data.db")
+                    c = connect.cursor()
+                    c.execute("UPDATE userdat SET Balance=? WHERE AccountNumber=?",(rl[0][6]+int(e_amt.get()),int(e_toacc.get())))
+                    connect.commit()
+                    connect.close()
+
+                    connect = sqlite3.connect("user_data.db")
+                    c = connect.cursor()
+                    a = rl[0][8] + "{} has Transferred Rs.{} to your Account     Time={}     Date={},".format(
+                        user_details[0][0], e_amt.get(), current_time, d)
+                    c.execute("UPDATE userdat SET Recents=? WHERE AccountNumber=?", (a, int(e_toacc.get())))
+                    connect.commit()
+                    connect.close()
+                    connect = sqlite3.connect("user_data.db")
+                    c = connect.cursor()
+                    b = user_details[0][8] + "You have Transferred Rs.{} to {}     Time={}     Date={},".format(e_amt.get(),
+                                                                                                                rl[0][0],
+                                                                                                                current_time,
+                                                                                                                d)
+                    c.execute("UPDATE userdat SET Recents=? WHERE Email=?", (b, user_details[0][4]))
+                    connect.commit()
+                    connect.close()
+
+                    with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+                        smtp.ehlo()
+                        smtp.starttls()
+                        smtp.ehlo()
+                        smtp.login('projectmanagermailing@gmail.com','Management')
+                        subject = 'Transfer Success Alert!'
+                        body = '''Transfer to other\n\n--------Forwarded message--------\nFrom: projectmanagermailing@gmail.com \nDate:{}\nSubject: IMPS Transaction->Success\nTo:{}\n\n\nDear {},\nWe wish to inform you that your account is debited for Rs.{} on {} towards IMPS\n\nPlease find the details as below:\nBeneficiary Name:{}\nBeneficiary Account No:{}'''.format(d,frm,user_details[0][0],
+                                                                                                                            e_amt.get(),d1,rl[0][0],e_toacc.get())
+                        msg = f'Subject: {subject}\n\n{body}'
+                        smtp.sendmail('projectmanagermailing@gmail.com', frm, msg)
+
+                    with smtplib.SMTP('smtp.gmail.com', 587) as smtp:
+                        smtp.ehlo()
+                        smtp.starttls()
+                        smtp.ehlo()
+                        smtp.login('projectmanagermailing@gmail.com', 'Management')
+                        subject = 'Credit Alert!!'
+                        body = '\n--------Forwarded message--------\nFrom: projectmanagermailing@gmail.com\nDate: {}\nSubject: Credit Alert\nTo: {}\n\nDear Customer,\nWe wish to inform you that Rs.{} is credited to your account on {} on account of Funds Transfer from {}'.format(d,to,e_amt.get(),d1,user_details[0][0])
+                        msg = f'Subject: {subject}\n\n{body}'
+                        smtp.sendmail('projectmanagermailing@gmail.com', to, msg)
+
+                    messagebox.showinfo("Fund Transfer", "Transfer was Successful!!")
+
+                    window.destroy()
+                    services()
+
+
 
         bs_proceed = Button(l_3,text="Proceed",font=("Helvetica",18),bg="red",fg="white",command=transfer)
         bs_proceed.place(x=850,y=450)
@@ -165,14 +195,14 @@ def services():
         b_24.config(state=DISABLED)
         ld_name = Label(l_3,text="Name: ",font=("Helvetica",20),bg="light grey")
         ld_dob = Label(l_3,text="Date of Birth: ",font=("Helvetica",20),bg="light grey")
-        ld_sex = Label(l_3,text="Sex: ",font=("Helvetica",20),bg="light grey")
+        ld_accno = Label(l_3,text="Account Number: ",font=("Helvetica",20),bg="light grey")
         ld_id = Label(l_3,text="Email ID: ",font=("Helvetica",20),bg="light grey")
         ld_mob = Label(l_3,text="Mobile Number: ",font=("Helvetica",20),bg="light grey")
         ld_type = Label(l_3,text="Type of Account: ",font=("Helvetica",20),bg="light grey")
         ld_balance = Label(l_3,text="Account Balance: ",font=("Helvetica",20),bg="light grey")
         ld_name.place(x=20,y=20)
         ld_dob.place(x=20,y=75)
-        ld_sex.place(x=20,y=130)
+        ld_accno.place(x=20,y=130)
         ld_id.place(x=20,y=195)
         ld_mob.place(x=20,y=255)
         ld_type.place(x=20,y=315)
@@ -181,14 +211,14 @@ def services():
 
         ld_name2 = Label(l_3,text=nl[0][0],font=("Helvetica",20),bg="light grey")
         ld_dob2 = Label(l_3,text=nl[0][1],font=("Helvetica",20),bg="light grey")
-        ld_sex2 = Label(l_3,text=nl[0][2],font=("Helvetica",20),bg="light grey")
+        ld_accno2 = Label(l_3,text=nl[0][9],font=("Helvetica",20),bg="light grey")
         ld_id2 = Label(l_3,text=nl[0][4],font=("Helvetica",20),bg="light grey")
         ld_mob2 = Label(l_3,text=nl[0][3],font=("Helvetica",20),bg="light grey")
         ld_type2 = Label(l_3,text=nl[0][5],font=("Helvetica",20),bg="light grey")
         ld_balance2 = Label(l_3,text=nl[0][6],font=("Helvetica",20),bg="light grey")
         ld_name2.place(x=310,y=20)
         ld_dob2.place(x=310,y=75)
-        ld_sex2.place(x=310,y=130)
+        ld_accno2.place(x=310,y=130)
         ld_id2.place(x=310,y=195)
         ld_mob2.place(x=310,y=255)
         ld_type2.place(x=310,y=315)
@@ -281,6 +311,7 @@ def registration_form():
                    password = e_password.get()
                    wpass.destroy()
                    win.destroy()
+                   accn=random.randrange(10000000,11000000)
                    connect = sqlite3.connect("user_data.db")
                    c = connect.cursor()
                    c.execute('''CREATE TABLE IF NOT EXISTS userdat
@@ -292,8 +323,9 @@ def registration_form():
                                 Type text,
                                 Balance integer,
                                 Password text,
-                                Recents text)''')
-                   c.execute("INSERT INTO userdat VALUES(?,?,?,?,?,?,?,?,'')",(name,dob,s,mobile,email,toa,balance,password))
+                                Recents text,
+                                AccountNumber integer)''')
+                   c.execute("INSERT INTO userdat VALUES(?,?,?,?,?,?,?,?,'',?)",(name,dob,s,mobile,email,toa,balance,password,accn))
                    connect.commit()
                    connect.close()
                    wins = Tk()
@@ -357,11 +389,20 @@ def registration_form():
                 count += 1
         connect.commit()
         connect.close()
+        numx=str(e_num.get())
+        x=0
+        for i in numx:
+            if(i.isalpha()):
+                x+=1
         if((e_name.get()=='')or(cal.get()=='')or(e_num.get()=='')or(e_email.get()=='')or(sex.get()=='None')or(type.get()=='None')or(initial.get()=='None')):
             messagebox.showwarning('Uh oh...','Fill in all the details!')
             b_otp.config(state=NORMAL)
         elif(count==1):
             messagebox.showerror("Email ID","Given Email ID has aldready been used!")
+        elif (x!=0):
+            messagebox.showerror("Mobile Number", "Invalid Number!\nEnter a valid Mobile Number")
+        elif (len(e_num.get()) != 10):
+            messagebox.showerror("Mobile Number", "Invalid Number!\nEnter a valid Mobile Number")
         else:
             e_name.config(state=DISABLED)
             cal.config(state=DISABLED)
@@ -378,11 +419,11 @@ def registration_form():
                 smtp.ehlo()
                 smtp.starttls()
                 smtp.ehlo()
-                smtp.login('otplogin123@gmail.com', 'oTpOtPoTp')
+                smtp.login('projectmanagermailing@gmail.com', 'Management')
                 subject = 'OTP LOGIN'
                 body = 'Use this code {} to sign-up'.format(otp)
                 msg = f'Subject: {subject}\n\n{body}'
-                smtp.sendmail('otplogin123@gmail.com', e_email.get(), msg)
+                smtp.sendmail('projectmanagermailing@gmail.com', e_email.get(), msg)
             global w
             w = Toplevel()
             w.title("Enter OTP")
@@ -411,7 +452,7 @@ def registration_form():
     l_name.place(x=50, y=90)
     l_dob = Label(win, text="Date of Birth:", font=("bold", 20))
     l_dob.place(x=50, y=160)
-    l_sex = Label(win, text="Sex:", font=("bold", 20))
+    l_sex = Label(win, text="Gender:", font=("bold", 20))
     l_sex.place(x=50, y=240)
     l_num = Label(win, text="Mobile Number:", font=("bold", 20))
     l_num.place(x=50, y=320)
@@ -469,5 +510,6 @@ def registration_form():
     win.resizable(False, False)
     win.mainloop()
 
-main_window()
 
+
+main_window()
