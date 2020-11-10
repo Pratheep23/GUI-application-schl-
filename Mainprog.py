@@ -8,6 +8,22 @@ from datetime import date
 import time
 import random
 
+connect = sqlite3.connect("user_data.db")
+c = connect.cursor()
+c.execute('''CREATE TABLE IF NOT EXISTS userdat
+            (Name text,
+            DOB text,
+            Sex text,
+            Mobile integer,
+            Email text,
+            Type text,
+            Balance integer,
+            Password text,
+            Recents text,
+            AccountNumber integer)''')
+connect.commit()
+connect.close()
+
 def main_window():
     global root
     root = Tk()
